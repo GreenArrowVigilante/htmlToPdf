@@ -45,13 +45,34 @@ namespace HtmlToPdf.Services
             return GeneratePdf(htmlContent);
         }
 
-        public byte[] GeneratePdfFromRazorView(string FilePath)
+        public byte[] GeneratePdfFromRazorView(string FileName)
         {
-            var invoiceViewModel = GetInvoiceModel();
-            var partialName =FilePath;
-            var htmlContent = _razorRendererHelper.RenderPartialToString(partialName, invoiceViewModel);
+            var (model, filePath) = GetFilePath(FileName);
+            var viewModel = model;
+            var partialName = filePath;
+            var htmlContent = _razorRendererHelper.RenderPartialToString(partialName, viewModel);
 
             return GeneratePdf(htmlContent);
+        }
+        public (object model,string filePath) GetFilePath(string FileName) 
+        {
+            string filePath = "";
+            object model = null;
+            switch (FileName)
+            {
+                case "Invoice":
+                    filePath = "/Views/PdfTemplate/InvoiceDetails.cshtml";
+                    model = GetInvoiceModel();
+                    break;
+                case "Ledger":
+                    filePath = "/Views/PdfTemplate/LedgerDetails.cshtml";
+                    model = GetLedgerModel();
+                    break;
+                default:
+
+                    break;
+            }
+            return (model, filePath);
         }
 
         private byte[] GeneratePdf(string htmlContent)
@@ -61,7 +82,7 @@ namespace HtmlToPdf.Services
                 ColorMode = ColorMode.Color,
                 Orientation = Orientation.Portrait,
                 PaperSize = PaperKind.A4,
-                Margins = new MarginSettings { Top = 18, Bottom = 18 },
+                Margins = new MarginSettings { Top = 10, Bottom = 10 },
             };
 
             var objectSettings = new ObjectSettings
@@ -70,7 +91,7 @@ namespace HtmlToPdf.Services
                 HtmlContent = htmlContent,
                 WebSettings = { DefaultEncoding = "utf-8" },
                 HeaderSettings = { FontSize = 10, Right = "Page [page] of [toPage]", Line = true },
-                FooterSettings = { FontSize = 8, Center = "PDF demo from JeminPro", Line = true },
+                FooterSettings = { FontSize = 8, Center = "GreenArrowVigilante", Line = true },
             };
 
             var htmlToPdfDocument = new HtmlToPdfDocument()
@@ -123,6 +144,59 @@ namespace HtmlToPdf.Services
             invoiceViewModel.TotalAmount = invoiceViewModel.Products.Sum(p => p.Price);
 
             return invoiceViewModel;
+        }
+
+        private LedgerViewModel GetLedgerModel()
+        {
+            var ledgerViewModel = new LedgerViewModel
+            {
+                PartyName = "John Smith",
+                AsOn = DateTime.Now,
+                FinancialPeriod = "2020-21",
+                LedgerDetails = new List<Ledger>()
+                {
+                    new Ledger
+                    {
+                        Particular = "Opening Balance",
+                        Debit = 2000,
+                        Credit = 0,
+                        Balance = 2000
+                    },
+                    new Ledger
+                    {
+                        Particular = "Reciept",
+                        Debit = 1000,
+                        Credit = 0,
+                        Balance = 3000
+                    },
+                    new Ledger
+                    {
+                        Particular = "Reciept",
+                        Debit = 1500,
+                        Credit = 0,
+                        Balance = 4500
+
+                    },
+                    new Ledger
+                    {
+                        Particular = "Payment",
+                        Debit = 0,
+                        Credit = 2250,
+                        Balance = 2250
+                    },
+                    new Ledger
+                    {   
+                        Particular = "Recipt",
+                        Debit =1000,
+                        Credit = 0,
+                        Balance = 3250
+                    },
+                }
+            };
+
+            ledgerViewModel.ClosingBalance = ledgerViewModel.LedgerDetails.LastOrDefault().Balance;
+
+            return ledgerViewModel;
         }
     }
 }

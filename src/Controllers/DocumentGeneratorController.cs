@@ -25,11 +25,17 @@ namespace HtmlToPdf.Controllers
             return File(pdfFile, "application/octet-stream", "SimplePdf.pdf");
         }
 
-        [HttpGet("GetPdfFromRazor")]
-        public IActionResult GetPdfFromRazor()
+        [HttpGet("GetInvoicePdfFromRazor")]
+        public IActionResult GetInvoicePdfFromRazor()
         {
-            var pdfFile = _documentService.GeneratePdfFromRazorView("/Views/PdfTemplate/InvoiceDetails.cshtml");
-            return File(pdfFile, "application/octet-stream", "RazorPdf.pdf");
+            var pdfFile = _documentService.GeneratePdfFromRazorView("Invoice");
+            return File(pdfFile, "application/octet-stream", "Invoice.pdf");
+        }
+        [HttpGet("GetLedgerPdfFromRazor")]
+        public IActionResult GetLedgerPdfFromRazor()
+        {
+            var pdfFile = _documentService.GeneratePdfFromRazorView("Ledger");
+            return File(pdfFile, "application/octet-stream", "Ledger.pdf");
         }
     }
 }
